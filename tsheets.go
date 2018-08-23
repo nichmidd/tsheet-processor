@@ -3,8 +3,8 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"os"
+	"time"
 
 	"github.com/nichmidd/tsheet-processor/db"
 	"github.com/nichmidd/tsheet-processor/fetch"
@@ -13,14 +13,25 @@ import (
 const rooturl = "https://rest.tsheets.com/api/v1/timesheets?"
 
 func main() {
-	if len(os.Args) < 3 {
-		log.Fatal("Not enough arguments\nYou need start date: 2001-01-01 and end date: 2001-01-08")
+
+	var querystartdate string
+	var queryenddate string
+
+	if len(os.Args) == 3 {
+		querystartdate = os.Args[1]
+		queryenddate = os.Args[2]
+	} else {
+		var b bytes.Buffer
+		oneDay := time.Hour * -24
+		t := time.Now().Add(oneDay)
+		fmt.Fprintf(&b, t.Format("2006-01-02"))
+		querystartdate = b.String()
+		queryenddate = b.String()
+		fmt.Printf("querystartdate: %s\nqueryenddate: %s\n", querystartdate, queryenddate)
 	}
 
 	var more = true
 	var page = 1
-	var querystartdate = os.Args[1]
-	var queryenddate = os.Args[2]
 	var jobs db.JobResults
 
 	for more {
