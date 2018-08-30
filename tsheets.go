@@ -27,7 +27,7 @@ func main() {
 		fmt.Fprintf(&b, t.Format("2006-01-02"))
 		querystartdate = b.String()
 		queryenddate = b.String()
-		fmt.Printf("querystartdate: %s\nqueryenddate: %s\n", querystartdate, queryenddate)
+		//fmt.Printf("querystartdate: %s\nqueryenddate: %s\n", querystartdate, queryenddate)
 	}
 
 	var more = true

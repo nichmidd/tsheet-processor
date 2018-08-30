@@ -91,8 +91,15 @@ func TSheetPages(url string, jobs *db.JobResults) (bool, error) {
 			}
 			jobs.Clients[cl.ID] = cl
 
-			start, _ := time.Parse(time.RFC3339, ts.Start)
-			end, _ := time.Parse(time.RFC3339, ts.End)
+			timeRounding := 15 * time.Minute
+			rawStart, _ := time.Parse(time.RFC3339, ts.Start)
+			//fmt.Fprintf(os.Stdout, "%s\n", rawStart)
+			start := rawStart.Round(timeRounding)
+			//fmt.Fprintf(os.Stdout, "%s\n", start)
+			rawEnd, _ := time.Parse(time.RFC3339, ts.End)
+			//fmt.Fprintf(os.Stdout, "%s\n", rawEnd)
+			end := rawEnd.Round(timeRounding)
+			//fmt.Fprintf(os.Stdout, "%s\n", end)
 			date, _ := time.Parse("2006-01-02", ts.Date)
 			dur := (math.Round((float64(ts.Duration)/60/60)*100) / 100)
 			jo := db.Job{ID: ts.ID, UserID: ts.UserID, ClientID: ts.JobCode, Start: start, End: end, Duration: dur, Date: date}
