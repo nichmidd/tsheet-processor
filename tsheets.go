@@ -2,6 +2,8 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
+	"flag"
 	"fmt"
 	"os"
 	"time"
@@ -12,22 +14,71 @@ import (
 
 const rooturl = "https://rest.tsheets.com/api/v1/timesheets?"
 
+//Configuration : structure for parseing config.json file
+type Configuration struct {
+	development struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+		Database string `json:"database"`
+		Host     string `json:"host"`
+		Dialect  string `json:"dialect"`
+		Bearer   string `json:"bearer"`
+	}
+	test struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+		Database string `json:"database"`
+		Host     string `json:"host"`
+		Dialect  string `json:"dialect"`
+		Bearer   string `json:"bearer"`
+	}
+	production struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+		Database string `json:"database"`
+		Host     string `json:"host"`
+		Dialect  string `json:"dialect"`
+		Bearer   string `json:"bearer"`
+	}
+}
+
 func main() {
 
 	var querystartdate string
 	var queryenddate string
 
-	if len(os.Args) == 3 {
-		querystartdate = os.Args[1]
-		queryenddate = os.Args[2]
+	var b bytes.Buffer
+	oneDay := time.Hour * -24
+	t := time.Now().Add(oneDay)
+	fmt.Fprintf(&b, t.Format("2006-01-02"))
+	today := b.String()
+
+	c := flag.String("c", "./config.json", "specify configuration file")
+	flagstartdate := flag.String("start", "today", "start day of query: 2006-01-02")
+	flagenddate := flag.String("end", "today", "end day of query: 2006-01-02")
+	flag.Parse()
+	if *flagstartdate == "today" {
+		querystartdate = today
 	} else {
-		var b bytes.Buffer
-		oneDay := time.Hour * -24
-		t := time.Now().Add(oneDay)
-		fmt.Fprintf(&b, t.Format("2006-01-02"))
-		querystartdate = b.String()
-		queryenddate = b.String()
-		//fmt.Printf("querystartdate: %s\nqueryenddate: %s\n", querystartdate, queryenddate)
+		querystartdate = *flagstartdate
+	}
+	if *flagenddate == "today" {
+		queryenddate = today
+	} else {
+		queryenddate = *flagenddate
+	}
+	configFile, err := os.Open(*c)
+	defer configFile.Close()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+	decoder := json.NewDecoder(configFile)
+	Config := Configuration{}
+	err = decoder.Decode(&Config)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
 	}
 
 	var more = true
@@ -47,7 +98,7 @@ func main() {
 		more = res
 	}
 
-	_, err := db.PushToDB(&jobs)
+	_, err = db.PushToDB(&jobs)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
