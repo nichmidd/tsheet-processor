@@ -1,6 +1,3 @@
-requires 4 environment variables:
+tsheet-processor -c="path_to_config_file" -start="2006-01-02" -end="2006-01-02"
 
-DBUSER - mysql db username
-DBPASS - mysql db user password
-DBHOST - mysql host
-BEARERTOKEN - TSheets API Token
+config.json syntax is the same as tsheet-approval [FIX THIS]
