@@ -89,7 +89,7 @@ func main() {
 		var buf bytes.Buffer
 		fmt.Fprintf(&buf, "%s&start_date=%s&end_date=%s&page=%d", rooturl, querystartdate, queryenddate, page)
 		var url = buf.String()
-		res, err := fetch.TSheetPages(url, &jobs)
+		res, err := fetch.TSheetPages(Config.production.Bearer, url, &jobs)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 			os.Exit(1)
@@ -98,7 +98,7 @@ func main() {
 		more = res
 	}
 
-	_, err = db.PushToDB(&jobs)
+	_, err = db.PushToDB(Config.production.Username, Config.production.Password, Config.production.Host, &jobs)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)

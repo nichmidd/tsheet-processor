@@ -42,12 +42,12 @@ type Contractor struct {
 	LastName  string `json:"last_name"`
 }
 
-var dbuser = os.Getenv("DBUSER")
-var dbpass = os.Getenv("DBPASS")
-var dbhost = os.Getenv("DBHOST")
+//var dbuser = os.Getenv("DBUSER")
+//var dbpass = os.Getenv("DBPASS")
+//var dbhost = os.Getenv("DBHOST")
 
 //PushToDB : writes stuff to a database
-func PushToDB(req *JobResults) (bool, error) {
+func PushToDB(dbuser string, dbpass string, dbhost string, req *JobResults) (bool, error) {
 	var dsn bytes.Buffer
 	fmt.Fprintf(&dsn, "%s:%s@tcp(%s)/tsheets", dbuser, dbpass, dbhost)
 	db, err := sql.Open("mysql", dsn.String())

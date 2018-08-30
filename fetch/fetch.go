@@ -54,11 +54,10 @@ type Users struct {
 }
 
 // TSheetPages : does the actual fetching
-func TSheetPages(url string, jobs *db.JobResults) (bool, error) {
+func TSheetPages(bearertok string, url string, jobs *db.JobResults) (bool, error) {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
 	var authtok bytes.Buffer
-	var bearertok = os.Getenv("BEARERTOKEN")
 	fmt.Fprintf(&authtok, "Bearer %s", bearertok)
 	req.Header.Add("Authorization", authtok.String())
 	resp, err := client.Do(req)
