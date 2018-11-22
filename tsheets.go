@@ -16,7 +16,7 @@ const rooturl = "https://rest.tsheets.com/api/v1/timesheets?"
 
 //Configuration : structure for parseing config.json file
 type Configuration struct {
-	development struct {
+	Development struct {
 		Username string `json:"username"`
 		Password string `json:"password"`
 		Database string `json:"database"`
@@ -24,7 +24,7 @@ type Configuration struct {
 		Dialect  string `json:"dialect"`
 		Bearer   string `json:"bearer"`
 	}
-	test struct {
+	Test struct {
 		Username string `json:"username"`
 		Password string `json:"password"`
 		Database string `json:"database"`
@@ -32,7 +32,7 @@ type Configuration struct {
 		Dialect  string `json:"dialect"`
 		Bearer   string `json:"bearer"`
 	}
-	production struct {
+	Production struct {
 		Username string `json:"username"`
 		Password string `json:"password"`
 		Database string `json:"database"`
@@ -89,7 +89,7 @@ func main() {
 		var buf bytes.Buffer
 		fmt.Fprintf(&buf, "%s&start_date=%s&end_date=%s&page=%d", rooturl, querystartdate, queryenddate, page)
 		var url = buf.String()
-		res, err := fetch.TSheetPages(Config.production.Bearer, url, &jobs)
+		res, err := fetch.TSheetPages(Config.Production.Bearer, url, &jobs)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 			os.Exit(1)
@@ -97,8 +97,7 @@ func main() {
 		page += 1
 		more = res
 	}
-
-	_, err = db.PushToDB(Config.production.Username, Config.production.Password, Config.production.Host, &jobs)
+	_, err = db.PushToDB(Config.Production.Username, Config.Production.Password, Config.Production.Host, &jobs)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
