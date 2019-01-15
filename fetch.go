@@ -1,4 +1,4 @@
-package fetch
+package main
 
 import (
 	"bytes"
@@ -9,7 +9,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/nichmidd/tsheet-processor/db"
+	//"github.com/nichmidd/tsheet-processor/db"
 )
 
 //TimesheetResults : 1
@@ -54,7 +54,7 @@ type Users struct {
 }
 
 // TSheetPages : does the actual fetching
-func TSheetPages(bearertok string, url string, jobs *db.JobResults) (bool, error) {
+func TSheetPages(bearertok string, url string, jobs *JobResults) (bool, error) {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
 	var authtok bytes.Buffer
@@ -78,15 +78,15 @@ func TSheetPages(bearertok string, url string, jobs *db.JobResults) (bool, error
 			if result.SuppData.JobCodes[ts.JobCode].Name == "Lunch Break" {
 				continue
 			}
-			co := db.Contractor{ID: result.SuppData.Users[ts.UserID].ID, FirstName: result.SuppData.Users[ts.UserID].FirstName, LastName: result.SuppData.Users[ts.UserID].LastName}
+			co := Contractor{ID: result.SuppData.Users[ts.UserID].ID, FirstName: result.SuppData.Users[ts.UserID].FirstName, LastName: result.SuppData.Users[ts.UserID].LastName}
 			if jobs.Contractors == nil {
-				jobs.Contractors = make(map[int]db.Contractor)
+				jobs.Contractors = make(map[int]Contractor)
 			}
 			jobs.Contractors[co.ID] = co
 
-			cl := db.Client{ID: result.SuppData.JobCodes[ts.JobCode].ID, Name: result.SuppData.JobCodes[ts.JobCode].Name}
+			cl := Client{ID: result.SuppData.JobCodes[ts.JobCode].ID, Name: result.SuppData.JobCodes[ts.JobCode].Name}
 			if jobs.Clients == nil {
-				jobs.Clients = make(map[int]db.Client)
+				jobs.Clients = make(map[int]Client)
 			}
 			jobs.Clients[cl.ID] = cl
 
@@ -101,9 +101,9 @@ func TSheetPages(bearertok string, url string, jobs *db.JobResults) (bool, error
 			//fmt.Fprintf(os.Stdout, "%s\n", end)
 			date, _ := time.Parse("2006-01-02", ts.Date)
 			dur := (math.Round((float64(ts.Duration)/60/60)*100) / 100)
-			jo := db.Job{ID: ts.ID, UserID: ts.UserID, ClientID: ts.JobCode, Start: start, End: end, Duration: dur, Date: date}
+			jo := Job{ID: ts.ID, UserID: ts.UserID, ClientID: ts.JobCode, Start: start, End: end, Duration: dur, Date: date}
 			if jobs.Jobs == nil {
-				jobs.Jobs = make(map[int]db.Job)
+				jobs.Jobs = make(map[int]Job)
 			}
 			jobs.Jobs[ts.ID] = jo
 		}
