@@ -7,11 +7,11 @@ import (
 	"fmt"
 	"os"
 	"time"
-
-	//"github.com/nichmidd/tsheet-processor/db"
-	//"github.com/nichmidd/tsheet-processor/fetch"
 )
 
+// FIX ME
+// this should be another part of the config file to allow testing/dev to not hit tsheets prod APU
+//
 const rooturl = "https://rest.tsheets.com/api/v1/timesheets?"
 
 //Configuration : structure for parseing config.json file

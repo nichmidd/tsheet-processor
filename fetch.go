@@ -4,11 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"math"
 	"net/http"
 	"os"
 	"time"
-
 	//"github.com/nichmidd/tsheet-processor/db"
 )
 
@@ -90,17 +88,27 @@ func TSheetPages(bearertok string, url string, jobs *JobResults) (bool, error) {
 			}
 			jobs.Clients[cl.ID] = cl
 
+			// FIX ME
+			// this really needs to be its own function (or set of functions)
+			//
+
+			//calculate rounding - we round to 15min increments
 			timeRounding := 15 * time.Minute
+			//fetch the raw start time and format it
 			rawStart, _ := time.Parse(time.RFC3339, ts.Start)
-			//fmt.Fprintf(os.Stdout, "%s\n", rawStart)
+			//round the start time to nearest 15min
 			start := rawStart.Round(timeRounding)
-			//fmt.Fprintf(os.Stdout, "%s\n", start)
+			//fetch the raw end time and format it
 			rawEnd, _ := time.Parse(time.RFC3339, ts.End)
-			//fmt.Fprintf(os.Stdout, "%s\n", rawEnd)
+			//round the end time to nearest 15min
 			end := rawEnd.Round(timeRounding)
-			//fmt.Fprintf(os.Stdout, "%s\n", end)
+			//format the start day
 			date, _ := time.Parse("2006-01-02", ts.Date)
-			dur := (math.Round((float64(ts.Duration)/60/60)*100) / 100)
+			//calculate job duration from rounded start and end times
+			var roundedDuration = end.Sub(start)
+			//convert duration to decimal value
+			dur := float64(float64(int64((float64(roundedDuration.Seconds())/60/60)*4)) / 4)
+			//create map and post it
 			jo := Job{ID: ts.ID, UserID: ts.UserID, ClientID: ts.JobCode, Start: start, End: end, Duration: dur, Date: date}
 			if jobs.Jobs == nil {
 				jobs.Jobs = make(map[int]Job)
