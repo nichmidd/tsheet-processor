@@ -1,4 +1,4 @@
-package db
+package main
 
 import (
 	"bytes"
@@ -35,27 +35,26 @@ type Client struct {
 	Name string
 }
 
-//Contractor : 1,3
+//Contractor : 1.3
 type Contractor struct {
 	ID        int
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 }
 
-//var dbuser = os.Getenv("DBUSER")
-//var dbpass = os.Getenv("DBPASS")
-//var dbhost = os.Getenv("DBHOST")
-
 //PushToDB : writes stuff to a database
 func PushToDB(dbuser string, dbpass string, dbhost string, req *JobResults) (bool, error) {
 	var dsn bytes.Buffer
 	fmt.Fprintf(&dsn, "%s:%s@tcp(%s)/tsheets", dbuser, dbpass, dbhost)
+	
 	db, err := sql.Open("mysql", dsn.String())
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error connecting to DB: %v\n", err)
 		os.Exit(1)
 	}
+
 	defer db.Close()
+
 	err = db.Ping()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
@@ -67,12 +66,15 @@ func PushToDB(dbuser string, dbpass string, dbhost string, req *JobResults) (boo
 		fmt.Fprintf(os.Stderr, "Prepare SQL failed: %v\n", err)
 		return false, err
 	}
+
 	rows, err := db.Query("select id from clients")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Query failed: %v\n", err)
 		return false, err
 	}
+
 	currentclients := make(map[int]int)
+
 	for rows.Next() {
 		var id int
 		err := rows.Scan(&id)
@@ -82,6 +84,7 @@ func PushToDB(dbuser string, dbpass string, dbhost string, req *JobResults) (boo
 		}
 		currentclients[id] = id
 	}
+
 	for _, cl := range req.Clients {
 		if cl.ID != currentclients[cl.ID] {
 			_, err := clientinsstmt.Exec(cl.ID, cl.Name)
@@ -97,11 +100,13 @@ func PushToDB(dbuser string, dbpass string, dbhost string, req *JobResults) (boo
 		fmt.Fprintf(os.Stderr, "Prepare SQL failed: %v\n", err)
 		return false, err
 	}
+
 	rows, err = db.Query("select id from contractors")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Query failed: %v\n", err)
 		return false, err
 	}
+
 	currentcontractors := make(map[int]int)
 	for rows.Next() {
 		var id int
@@ -112,6 +117,7 @@ func PushToDB(dbuser string, dbpass string, dbhost string, req *JobResults) (boo
 		}
 		currentcontractors[id] = id
 	}
+
 	for _, co := range req.Contractors {
 		if co.ID != currentcontractors[co.ID] {
 			_, err = contractorinsstmt.Exec(co.ID, co.FirstName, co.LastName)
@@ -127,6 +133,7 @@ func PushToDB(dbuser string, dbpass string, dbhost string, req *JobResults) (boo
 		fmt.Fprintf(os.Stderr, "Prepare SQL failed: %v\n", err)
 		return false, err
 	}
+	
 	for _, jo := range req.Jobs {
 		_, err = tsheetstmt.Exec(jo.ID, jo.Date, jo.Start, jo.End, jo.ClientID, jo.UserID, jo.Duration)
 		if err != nil {

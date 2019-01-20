@@ -7,11 +7,11 @@ import (
 	"fmt"
 	"os"
 	"time"
-
-	"github.com/nichmidd/tsheet-processor/db"
-	"github.com/nichmidd/tsheet-processor/fetch"
 )
 
+// FIX ME
+// this should be another part of the config file to allow testing/dev to not hit tsheets prod APU
+//
 const rooturl = "https://rest.tsheets.com/api/v1/timesheets?"
 
 //Configuration : structure for parseing config.json file
@@ -83,13 +83,13 @@ func main() {
 
 	var more = true
 	var page = 1
-	var jobs db.JobResults
+	var jobs JobResults
 
 	for more {
 		var buf bytes.Buffer
 		fmt.Fprintf(&buf, "%s&start_date=%s&end_date=%s&page=%d", rooturl, querystartdate, queryenddate, page)
 		var url = buf.String()
-		res, err := fetch.TSheetPages(Config.Production.Bearer, url, &jobs)
+		res, err := TSheetPages(Config.Production.Bearer, url, &jobs)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 			os.Exit(1)
@@ -97,7 +97,7 @@ func main() {
 		page += 1
 		more = res
 	}
-	_, err = db.PushToDB(Config.Production.Username, Config.Production.Password, Config.Production.Host, &jobs)
+	_, err = PushToDB(Config.Production.Username, Config.Production.Password, Config.Production.Host, &jobs)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)

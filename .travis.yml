@@ -1,1 +1,18 @@
 language: go
+go:
+- '1.10'
+script:
+- make
+before_deploy:
+- make VERSION=${TRAVIS_TAG} release
+deploy:
+  provider: releases
+  api_key:
+    secure: qVRbfN/SFvylCjOf32u0v2A92/cjLdk0YKBbGrfNTqDxi5xGEkECEhlexb4imgZD7ttMThE+O8ZTLtov1GHrTiJmAN+jZjc5NsG7JOcA621yLfhzyoCKvOGlyuOpicLQ2jH9VUU7+wqyQpWV9pgFkD5FnGKONc6Ss6uIdQbkcR/sWXOFc+TJU9+YUah2jiJFtbFWVgsQNsMKTkS1xJ8OV8Ruq530c3nLbNCKnC1gHuDHBxLJn0DaUYx+ucsfBB7MzIEKbvW88mciLjB/WIGFGVFBSkjkoTYVEr8v6PlMfYl/1jn52IyUT9j/Plonld/VxL156YYKy8u7U2kgeItTCkdIHMXlJADp5wvXjhnAo3Y0WquV6UCy3ilciwviQGDXZChtmPrhcQv+wpOLaECGzma11SsN+1qHgnhpmQtsNdi2jQPia77KPMV5kGbHzOkmaDOe2eoU3TY7UEs1rJDuFtigf0WDPLRh78/Knv4ftGQuqXPZ7fXdf04LmdTqUnz2kFAw0RrGeDrbcEyUud40qkBZ4WkXY19VxOu5XAgZ0a31YUeuQlrqXwvvh1kAu6IyQ3dNUNKFG3iZlffd3/y48jGn48g58yacgoUo4U4UFFF8Owuo8hZHQai9oKVPFtkyAn3m8So00kff/ngS2P40yLnjh3612LBm7Kr5Q3n4w+Q=
+  file: release/*
+  file_glob: true
+  skip_cleanup: true
+  on:
+    tags: true
+    repo: nichmidd/tsheet-processor
+
