@@ -86,6 +86,7 @@ CREATE TABLE `timesheets` (
   `client` int(10) DEFAULT NULL,
   `contractor` int(10) DEFAULT NULL,
   `duration` float DEFAULT NULL,
+  `lastmodified` datetime DEFAULT NULL,
   `Approved` tinyint(1) DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;

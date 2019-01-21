@@ -28,13 +28,14 @@ type SupData struct {
 
 //TSheets : 4
 type TSheets struct {
-	ID       int
-	UserID   int `json:"user_id"`
-	JobCode  int `json:"jobcode_id"`
-	Start    string
-	End      string
-	Duration int
-	Date     string
+	ID           int
+	UserID       int `json:"user_id"`
+	JobCode      int `json:"jobcode_id"`
+	Start        string
+	End          string
+	Duration     int
+	Date         string
+	LastModified string `json:"last_modified"`
 }
 
 //Jobcodes : 5
@@ -117,11 +118,13 @@ func TSheetPages(bearertok string, url string, jobs *JobResults, debug bool) (bo
 			var roundedDuration = end.Sub(start)
 			//convert duration to decimal value
 			dur := float64(float64(int64((float64(roundedDuration.Seconds())/60/60)*4)) / 4)
+			//parse date modified to type Time
+			dateModified, _ := time.Parse(time.RFC3339, ts.LastModified)
 			//create map and post it
-			jo := Job{ID: ts.ID, UserID: ts.UserID, ClientID: ts.JobCode, Start: start, End: end, Duration: dur, Date: date}
+			jo := Job{ID: ts.ID, UserID: ts.UserID, ClientID: ts.JobCode, Start: start, End: end, Duration: dur, Date: date, LastModified: dateModified}
 			//debug
 			if debug {
-				fmt.Fprintf(os.Stdout, "Date: %s\tID: %d\tStart: %s\tEnd: %s\tDur: %f\n", ts.Date, ts.ID, start, end, dur)
+				fmt.Fprintf(os.Stdout, "Date: %s\tID: %d\tStart: %s\tEnd: %s\tDur: %f\tLastMod: %s\n", ts.Date, ts.ID, start, end, dur, dateModified)
 			}
 
 			if jobs.Jobs == nil {

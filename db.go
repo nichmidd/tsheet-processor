@@ -20,13 +20,14 @@ type JobResults struct {
 
 //Job : 1.1
 type Job struct {
-	ID       int
-	UserID   int
-	ClientID int
-	Start    time.Time
-	End      time.Time
-	Duration float64
-	Date     time.Time
+	ID           int
+	UserID       int
+	ClientID     int
+	Start        time.Time
+	End          time.Time
+	Duration     float64
+	Date         time.Time
+	LastModified time.Time
 }
 
 //Client : 1.2
@@ -136,7 +137,7 @@ func PushToDB(dbuser string, dbpass string, dbhost string, dbName string, req *J
 		}
 	}
 
-	tsheetstmt, err := db.Prepare("insert timesheets set id=?,day=?,start=?,end=?,client=?,contractor=?,duration=?")
+	tsheetstmt, err := db.Prepare("insert timesheets set id=?,day=?,start=?,end=?,client=?,contractor=?,duration=?,lastmodified=?")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Prepare SQL failed: %v\n", err)
 		return false, err
@@ -145,9 +146,9 @@ func PushToDB(dbuser string, dbpass string, dbhost string, dbName string, req *J
 	for _, jo := range req.Jobs {
 		//debug
 		if debug {
-			fmt.Fprintf(os.Stdout, "Inserting:\nDate: %s\tID: %d\tStart: %s\tEnd: %s\tClient: %d\tDur: %f\n", jo.Date, jo.ID, jo.Start, jo.End, jo.ClientID, jo.Duration)
+			fmt.Fprintf(os.Stdout, "Inserting:\nDate: %s\tID: %d\tStart: %s\tEnd: %s\tClient: %d\tDur: %f\tLastMod: %s\n", jo.Date, jo.ID, jo.Start, jo.End, jo.ClientID, jo.Duration, jo.LastModified)
 		}
-		_, err = tsheetstmt.Exec(jo.ID, jo.Date, jo.Start, jo.End, jo.ClientID, jo.UserID, jo.Duration)
+		_, err = tsheetstmt.Exec(jo.ID, jo.Date, jo.Start, jo.End, jo.ClientID, jo.UserID, jo.Duration, jo.LastModified)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Insert failed: %v\n", err)
 			return false, err
