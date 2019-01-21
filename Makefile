@@ -26,3 +26,11 @@ VERSION ?= vlatest
 release:
 	mkdir -p release
 	go build -o release/$(BINARY)-$(VERSION)
+
+.PHONY: startlocal
+startlocal:
+	docker run -d --rm --name tsheetsdevmariadb -p 3306:3306 -eMARIADB_ROOT_PASSWORD=Password1 -eMARIADB_DATABASE=tsheetsdev -eMARIADB_USER=tsheetsuser -eMARIADB_PASSWORD=changeme -v $(PWD)/install:/docker-entrypoint-initdb.d mariadb/server:10.3
+
+.PHONY: stoplocal
+stoplocal:
+	docker stop tsheetsdevmariadb

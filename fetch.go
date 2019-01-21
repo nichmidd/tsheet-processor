@@ -52,7 +52,12 @@ type Users struct {
 }
 
 // TSheetPages : does the actual fetching
-func TSheetPages(bearertok string, url string, jobs *JobResults) (bool, error) {
+func TSheetPages(bearertok string, url string, jobs *JobResults, debug bool) (bool, error) {
+	// debug
+	if debug {
+		fmt.Fprintf(os.Stdout, "Fetching with URL: %s\n", url)
+	}
+
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
 	var authtok bytes.Buffer
@@ -102,6 +107,10 @@ func TSheetPages(bearertok string, url string, jobs *JobResults) (bool, error) {
 			rawEnd, _ := time.Parse(time.RFC3339, ts.End)
 			//round the end time to nearest 15min
 			end := rawEnd.Round(timeRounding)
+			//if start == end then add 15min to end - this is our minimum charge time
+			if start == end {
+				end = end.Add(timeRounding)
+			}
 			//format the start day
 			date, _ := time.Parse("2006-01-02", ts.Date)
 			//calculate job duration from rounded start and end times
@@ -110,6 +119,11 @@ func TSheetPages(bearertok string, url string, jobs *JobResults) (bool, error) {
 			dur := float64(float64(int64((float64(roundedDuration.Seconds())/60/60)*4)) / 4)
 			//create map and post it
 			jo := Job{ID: ts.ID, UserID: ts.UserID, ClientID: ts.JobCode, Start: start, End: end, Duration: dur, Date: date}
+			//debug
+			if debug {
+				fmt.Fprintf(os.Stdout, "Date: %s\tID: %d\tStart: %s\tEnd: %s\tDur: %f\n", ts.Date, ts.ID, start, end, dur)
+			}
+
 			if jobs.Jobs == nil {
 				jobs.Jobs = make(map[int]Job)
 			}

@@ -43,10 +43,10 @@ type Contractor struct {
 }
 
 //PushToDB : writes stuff to a database
-func PushToDB(dbuser string, dbpass string, dbhost string, req *JobResults) (bool, error) {
+func PushToDB(dbuser string, dbpass string, dbhost string, dbName string, req *JobResults, debug bool) (bool, error) {
 	var dsn bytes.Buffer
-	fmt.Fprintf(&dsn, "%s:%s@tcp(%s)/tsheets", dbuser, dbpass, dbhost)
-	
+	fmt.Fprintf(&dsn, "%s:%s@tcp(%s)/%s", dbuser, dbpass, dbhost, dbName)
+
 	db, err := sql.Open("mysql", dsn.String())
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error connecting to DB: %v\n", err)
@@ -87,6 +87,10 @@ func PushToDB(dbuser string, dbpass string, dbhost string, req *JobResults) (boo
 
 	for _, cl := range req.Clients {
 		if cl.ID != currentclients[cl.ID] {
+			//debug
+			if debug {
+				fmt.Fprintf(os.Stdout, "Adding new client: %d\t%s\n", cl.ID, cl.Name)
+			}
 			_, err := clientinsstmt.Exec(cl.ID, cl.Name)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "Insert failed: %v\n", err)
@@ -120,6 +124,10 @@ func PushToDB(dbuser string, dbpass string, dbhost string, req *JobResults) (boo
 
 	for _, co := range req.Contractors {
 		if co.ID != currentcontractors[co.ID] {
+			//debug
+			if debug {
+				fmt.Fprintf(os.Stdout, "Adding new contractor: %d\t%s %s\n", co.ID, co.FirstName, co.LastName)
+			}
 			_, err = contractorinsstmt.Exec(co.ID, co.FirstName, co.LastName)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "Insert failed: %v\n", err)
@@ -133,8 +141,12 @@ func PushToDB(dbuser string, dbpass string, dbhost string, req *JobResults) (boo
 		fmt.Fprintf(os.Stderr, "Prepare SQL failed: %v\n", err)
 		return false, err
 	}
-	
+
 	for _, jo := range req.Jobs {
+		//debug
+		if debug {
+			fmt.Fprintf(os.Stdout, "Inserting:\nDate: %s\tID: %d\tStart: %s\tEnd: %s\tClient: %d\tDur: %f\n", jo.Date, jo.ID, jo.Start, jo.End, jo.ClientID, jo.Duration)
+		}
 		_, err = tsheetstmt.Exec(jo.ID, jo.Date, jo.Start, jo.End, jo.ClientID, jo.UserID, jo.Duration)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Insert failed: %v\n", err)
