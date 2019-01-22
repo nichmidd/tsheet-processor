@@ -109,8 +109,15 @@ func TSheetPages(bearertok string, url string, jobs *JobResults, debug bool) (bo
 			//round the end time to nearest 15min
 			end := rawEnd.Round(timeRounding)
 			//if start == end then add 15min to end - this is our minimum charge time
+			//debug
+			if debug {
+				fmt.Fprintf(os.Stdout, "Start: %s\tEnd: %s\n", start, end)
+			}
 			if start == end {
 				end = end.Add(timeRounding)
+				if debug {
+					fmt.Fprintf(os.Stdout, "Updated End Time: %s\n", end)
+				}
 			}
 			//format the start day
 			date, _ := time.Parse("2006-01-02", ts.Date)

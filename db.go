@@ -176,11 +176,11 @@ func PushToDB(dbuser string, dbpass string, dbhost string, dbName string, req *J
 	}
 
 	//and finally, remove any entries that have been deleted since last run
-	_, err = db.Exec("delete from timesheets where timesheets.id in (select t.id from timesheets as t left outer join tsheettemp as s on t.id = s.id where s.id is null)")
-	if err != nil {
-		fmt.Fprintf(os.Stdout, "Removal of deleted entries Failed: %v\n", err)
-		return false, err
-	}
+	//_, err = db.Exec("delete from timesheets where timesheets.id in (select t.id from timesheets as t left outer join tsheettemp as s on t.id = s.id where s.id is null)")
+	//if err != nil {
+	//	fmt.Fprintf(os.Stdout, "Removal of deleted entries Failed: %v\n", err)
+	//	return false, err
+	//}
 
 	return true, nil
 }
