@@ -137,9 +137,15 @@ func PushToDB(dbuser string, dbpass string, dbhost string, dbName string, req *J
 		}
 	}
 
-	tsheetstmt, err := db.Prepare("insert timesheets set id=?,day=?,start=?,end=?,client=?,contractor=?,duration=?,lastmodified=?")
+	_, err = db.Exec("create temporary table tsheettemp like timesheets")
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Prepare SQL failed: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Create SQL Temp Table failed: %v\n", err)
+		return false, err
+	}
+
+	tsheetstmt, err := db.Prepare("insert tsheettemp set id=?,day=?,start=?,end=?,client=?,contractor=?,duration=?,lastmodified=?,lastwrite=now()")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Prepare SQL Temp Table failed: %v\n", err)
 		return false, err
 	}
 
@@ -150,9 +156,30 @@ func PushToDB(dbuser string, dbpass string, dbhost string, dbName string, req *J
 		}
 		_, err = tsheetstmt.Exec(jo.ID, jo.Date, jo.Start, jo.End, jo.ClientID, jo.UserID, jo.Duration, jo.LastModified)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Insert failed: %v\n", err)
+			fmt.Fprintf(os.Stderr, "Insert to Temp Table failed: %v\n", err)
 			return false, err
 		}
+	}
+
+	//insert only new timesheet entries to timesheets table
+	_, err = db.Exec("insert into timesheets (id, day, start, end, client, contractor, duration, lastmodified, lastwrite) select t.id, t.day, t.start, t.end, t.client, t.contractor, t.duration, t.lastmodified, t.lastwrite from tsheettemp as t left outer join timesheets as r on t.id = r.id where r.id is null")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Left Outer Join Insert Failed: %v\n", err)
+		return false, err
+	}
+
+	//now we want to update any entries that have been modified since the last run
+	_, err = db.Exec("update timesheets as t inner join tsheettemp as s on t.id = s.id set t.day = s.day, t.start = s.start, t.end = s.end, t.client = s.client, t.contractor = s.contractor, t.duration = s.duration, t.lastmodified = s.lastmodified, t.lastwrite = now() where s.lastmodified > t.lastwrite;")
+	if err != nil {
+		fmt.Fprintf(os.Stdout, "Update modified entries Failed: %v\n", err)
+		return false, err
+	}
+
+	//and finally, remove any entries that have been deleted since last run
+	_, err = db.Exec("delete from timesheets where timesheets.id in (select t.id from timesheets as t left outer join tsheettemp as s on t.id = s.id where s.id is null)")
+	if err != nil {
+		fmt.Fprintf(os.Stdout, "Removal of deleted entries Failed: %v\n", err)
+		return false, err
 	}
 
 	return true, nil
