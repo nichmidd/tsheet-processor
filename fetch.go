@@ -125,6 +125,10 @@ func TSheetPages(bearertok string, url string, jobs *JobResults, debug bool) (bo
 			var roundedDuration = end.Sub(start)
 			//convert duration to decimal value
 			dur := float64(float64(int64((float64(roundedDuration.Seconds())/60/60)*4)) / 4)
+			//final catchall
+			if dur < 0.25 {
+				dur = 0.25
+			}
 			//parse date modified to type Time
 			dateModified, _ := time.Parse(time.RFC3339, ts.LastModified)
 			//create map and post it
