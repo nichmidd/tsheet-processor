@@ -176,11 +176,22 @@ func PushToDB(dbuser string, dbpass string, dbhost string, dbName string, req *J
 	}
 
 	//and finally, remove any entries that have been deleted since last run
-	//_, err = db.Exec("delete from timesheets where timesheets.id in (select t.id from timesheets as t left outer join tsheettemp as s on t.id = s.id where s.id is null)")
-	//if err != nil {
-	//	fmt.Fprintf(os.Stdout, "Removal of deleted entries Failed: %v\n", err)
-	//	return false, err
-	//}
+	//we have to create a temp table to capture the timesheets.id value, or else mysql cries
+	_, err = db.Exec("create temporary table toremove like timesheets")
+	if err != nil {
+		fmt.Fprintf(os.Stdout, "Create Temp Table toremove Failed: %v\n", err)
+		return false, err
+	}
+	_, err = db.Exec("insert into toremove (select t.id,t.day,t.start,t.end,t.client,t.contractor,t.duration,t.lastmodified,t.lastwrite,t.Approved from timesheets as t left outer join tsheettemp as s on t.id = s.id where s.id is null)")
+	if err != nil {
+		fmt.Fprintf(os.Stdout, "Insert of deleted entries to Temp Table Failed: %v\n", err)
+		return false, err
+	}
+	_, err = db.Exec("delete from timesheets where timesheets.id in (select id from toremove")
+	if err != nil {
+		fmt.Fprintf(os.Stdout, "Removal of deleted entries Failed: %v\n", err)
+		return false, err
+	}
 
 	return true, nil
 }
