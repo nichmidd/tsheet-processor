@@ -187,7 +187,7 @@ func PushToDB(dbuser string, dbpass string, dbhost string, dbName string, req *J
 		fmt.Fprintf(os.Stdout, "Insert of deleted entries to Temp Table Failed: %v\n", err)
 		return false, err
 	}
-	_, err = db.Exec("delete from timesheets where timesheets.id in (select id from toremove")
+	_, err = db.Exec("delete from timesheets where timesheets.id in (select id from toremove)")
 	if err != nil {
 		fmt.Fprintf(os.Stdout, "Removal of deleted entries Failed: %v\n", err)
 		return false, err
